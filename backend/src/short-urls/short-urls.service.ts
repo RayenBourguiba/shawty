@@ -4,10 +4,11 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateShortUrlDto } from './dto/create-short-url.dto';
 import { generateRandomShortCode } from './utils/short-code.generator';
-import type { ShortUrl } from '@prisma/client';
+import { ShortUrl } from '@prisma/client';
 
 @Injectable()
 export class ShortUrlsService {
@@ -44,8 +45,11 @@ export class ShortUrlsService {
           ...created,
           shortUrl: `${process.env.BASE_URL}/${created.shortCode}`,
         };
-      } catch (error: any) {
-        if (error?.code === 'P2002') {
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2002'
+        ) {
           continue;
         }
 
